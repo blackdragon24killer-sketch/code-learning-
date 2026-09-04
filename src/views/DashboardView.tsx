@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { Problem, CodingTest, Difficulty, Language, UserRole } from '../types';
 import { STATUS_LABELS } from '../services/codeRunner';
+import { EditProblemModal } from '../components/EditProblemModal';
+import { EditTestModal } from '../components/EditTestModal';
 import { 
   User as UserIcon, 
   Award, 
@@ -31,9 +33,11 @@ export const DashboardView: React.FC = () => {
     currentRole, 
     problems, 
     addProblem, 
+    updateProblem,
     deleteProblem, 
     tests, 
     addTest, 
+    updateTest,
     submissions, 
     users, 
     setCurrentView, 
@@ -48,6 +52,10 @@ export const DashboardView: React.FC = () => {
   // Modals
   const [isNewProblemModalOpen, setIsNewProblemModalOpen] = useState(false);
   const [isNewTestModalOpen, setIsNewTestModalOpen] = useState(false);
+  const [editingProblem, setEditingProblem] = useState<Problem | null>(null);
+  const [isEditProblemModalOpen, setIsEditProblemModalOpen] = useState(false);
+  const [editingTest, setEditingTest] = useState<CodingTest | null>(null);
+  const [isEditTestModalOpen, setIsEditTestModalOpen] = useState(false);
 
   // New Problem Form State
   const [newProbTitleKh, setNewProbTitleKh] = useState('');
@@ -374,12 +382,14 @@ export const DashboardView: React.FC = () => {
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => {
-                      showToast('កែប្រែការប្រឡង (កំពុងបើក Edit Mode)', 'info');
+                      setEditingTest(t);
+                      setIsEditTestModalOpen(true);
                     }}
-                    className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 text-xs font-semibold"
-                    title="កែប្រែ"
+                    className="p-2 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 text-indigo-600 dark:text-indigo-400 text-xs font-semibold flex items-center gap-1"
+                    title="កែប្រែការប្រឡង"
                   >
                     <Edit3 className="h-4 w-4" />
+                    <span>កែប្រែ</span>
                   </button>
                   <button
                     onClick={() => {
@@ -525,7 +535,10 @@ export const DashboardView: React.FC = () => {
 
         <button
           id="admin-btn-add-problem"
-          onClick={() => setIsNewProblemModalOpen(true)}
+          onClick={() => {
+            setEditingProblem(null);
+            setIsEditProblemModalOpen(true);
+          }}
           className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold flex items-center gap-2 shadow-sm self-start sm:self-auto transition-colors"
         >
           <PlusCircle className="h-4 w-4" />
@@ -590,6 +603,17 @@ export const DashboardView: React.FC = () => {
                 </div>
 
                 <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => {
+                      setEditingProblem(p);
+                      setIsEditProblemModalOpen(true);
+                    }}
+                    className="px-2.5 py-1 rounded-md bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 text-indigo-600 dark:text-indigo-400 font-semibold flex items-center gap-1"
+                    title="កែប្រែលំហាត់"
+                  >
+                    <Edit3 className="h-3.5 w-3.5" />
+                    <span>កែប្រែ</span>
+                  </button>
                   <button
                     onClick={() => {
                       setSelectedProblemId(p.id);
@@ -794,6 +818,36 @@ export const DashboardView: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Edit / Create Problem Modal */}
+      <EditProblemModal
+        isOpen={isEditProblemModalOpen}
+        problem={editingProblem}
+        onClose={() => {
+          setIsEditProblemModalOpen(false);
+          setEditingProblem(null);
+        }}
+        onSave={(updated) => {
+          if (editingProblem) {
+            updateProblem(updated);
+          } else {
+            addProblem(updated);
+          }
+        }}
+      />
+
+      {/* Edit Test Modal */}
+      <EditTestModal
+        isOpen={isEditTestModalOpen}
+        test={editingTest}
+        onClose={() => {
+          setIsEditTestModalOpen(false);
+          setEditingTest(null);
+        }}
+        onSave={(updated) => {
+          updateTest(updated);
+        }}
+      />
 
     </div>
   );

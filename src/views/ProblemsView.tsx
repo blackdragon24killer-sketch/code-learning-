@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useApp } from '../context/AppContext';
-import { Language, Difficulty } from '../types';
+import { Language, Difficulty, Problem } from '../types';
 import { 
   Search, 
   Code2, 
@@ -8,23 +8,33 @@ import {
   Clock, 
   Cpu, 
   SlidersHorizontal,
-  ChevronRight
+  ChevronRight,
+  Edit3,
+  Trash2,
+  PlusCircle
 } from 'lucide-react';
+import { EditProblemModal } from '../components/EditProblemModal';
 
 export const ProblemsView: React.FC = () => {
   const { 
     problems, 
     submissions, 
     currentUser, 
+    currentRole,
     preferredLanguage, 
     setPreferredLanguage, 
     setSelectedProblemId, 
-    setCurrentView 
+    setCurrentView,
+    updateProblem,
+    addProblem,
+    deleteProblem
   } = useApp();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty | 'all'>('all');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [editingProblem, setEditingProblem] = useState<Problem | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   // Solved problem ids for this user
   const solvedProblemIds = useMemo(() => {
@@ -97,40 +107,55 @@ export const ProblemsView: React.FC = () => {
           </p>
         </div>
 
-        {/* Language Quick Tabs */}
-        <div className="flex items-center gap-1.5 p-1 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 self-start md:self-auto">
-          <button
-            onClick={() => setPreferredLanguage('all')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
-              preferredLanguage === 'all'
-                ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-xs'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
-            }`}
-          >
-            ទាំងអស់ ({problems.length})
-          </button>
-          <button
-            onClick={() => setPreferredLanguage('python')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1 transition-colors ${
-              preferredLanguage === 'python'
-                ? 'bg-blue-600 text-white shadow-xs'
-                : 'text-slate-600 dark:text-slate-400 hover:text-blue-600'
-            }`}
-          >
-            <Code2 className="h-3.5 w-3.5" />
-            <span>Python ({problems.filter(p => p.language === 'python').length})</span>
-          </button>
-          <button
-            onClick={() => setPreferredLanguage('cpp')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1 transition-colors ${
-              preferredLanguage === 'cpp'
-                ? 'bg-purple-600 text-white shadow-xs'
-                : 'text-slate-600 dark:text-slate-400 hover:text-purple-600'
-            }`}
-          >
-            <Cpu className="h-3.5 w-3.5" />
-            <span>C++ ({problems.filter(p => p.language === 'cpp').length})</span>
-          </button>
+        {/* Language Quick Tabs & Admin Actions */}
+        <div className="flex flex-wrap items-center gap-2 self-start md:self-auto">
+          {(currentRole === 'admin' || currentRole === 'teacher') && (
+            <button
+              onClick={() => {
+                setEditingProblem(null);
+                setIsEditModalOpen(true);
+              }}
+              className="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm transition"
+            >
+              <PlusCircle className="h-4 w-4" />
+              <span>+ បង្កើតលំហាត់ថ្មី</span>
+            </button>
+          )}
+
+          <div className="flex items-center gap-1.5 p-1 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+            <button
+              onClick={() => setPreferredLanguage('all')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                preferredLanguage === 'all'
+                  ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+              }`}
+            >
+              ទាំងអស់ ({problems.length})
+            </button>
+            <button
+              onClick={() => setPreferredLanguage('python')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1 transition-colors ${
+                preferredLanguage === 'python'
+                  ? 'bg-blue-600 text-white shadow-xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-blue-600'
+              }`}
+            >
+              <Code2 className="h-3.5 w-3.5" />
+              <span>Python ({problems.filter(p => p.language === 'python').length})</span>
+            </button>
+            <button
+              onClick={() => setPreferredLanguage('cpp')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1 transition-colors ${
+                preferredLanguage === 'cpp'
+                  ? 'bg-purple-600 text-white shadow-xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-purple-600'
+              }`}
+            >
+              <Cpu className="h-3.5 w-3.5" />
+              <span>C++ ({problems.filter(p => p.language === 'cpp').length})</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -252,7 +277,7 @@ export const ProblemsView: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Points & Arrow */}
+                {/* Points, Actions & Arrow */}
                 <div className="flex items-center gap-3 shrink-0">
                   <div className="text-right">
                     <span className="text-sm font-bold text-indigo-600 dark:text-indigo-400">
@@ -262,6 +287,38 @@ export const ProblemsView: React.FC = () => {
                       {problem.testCases.length} Test cases
                     </p>
                   </div>
+
+                  {(currentRole === 'admin' || currentRole === 'teacher') && (
+                    <div className="flex items-center gap-1.5 pl-2 border-l border-slate-200 dark:border-slate-800" onClick={(e) => e.stopPropagation()}>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setEditingProblem(problem);
+                          setIsEditModalOpen(true);
+                        }}
+                        className="px-2.5 py-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/70 hover:bg-indigo-100 dark:hover:bg-indigo-900 text-indigo-600 dark:text-indigo-400 text-xs font-bold flex items-center gap-1 transition shadow-2xs"
+                        title="កែប្រែលំហាត់នេះ (Edit Problem)"
+                      >
+                        <Edit3 className="h-3.5 w-3.5" />
+                        <span className="hidden sm:inline">កែប្រែ</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (window.confirm(`តើអ្នកពិតជាចង់លុបលំហាត់ "${problem.titleKhmer}" នេះមែនទេ?`)) {
+                            deleteProblem(problem.id);
+                          }
+                        }}
+                        className="p-1.5 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/50 text-rose-500 hover:text-rose-700 transition"
+                        title="លុបលំហាត់ (Delete Problem)"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  )}
+
                   <ChevronRight className="h-5 w-5 text-slate-400 group-hover:text-indigo-500 group-hover:translate-x-0.5 transition-all" />
                 </div>
               </div>
@@ -269,6 +326,23 @@ export const ProblemsView: React.FC = () => {
           })
         )}
       </div>
+
+      {/* Edit / Create Problem Modal */}
+      <EditProblemModal
+        isOpen={isEditModalOpen}
+        problem={editingProblem}
+        onClose={() => {
+          setIsEditModalOpen(false);
+          setEditingProblem(null);
+        }}
+        onSave={(updated) => {
+          if (editingProblem) {
+            updateProblem(updated);
+          } else {
+            addProblem(updated);
+          }
+        }}
+      />
 
     </div>
   );

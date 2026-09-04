@@ -19,8 +19,10 @@ import {
   FileText,
   HelpCircle,
   RotateCcw,
-  Sparkles
+  Sparkles,
+  Edit3
 } from 'lucide-react';
+import { EditProblemModal } from '../components/EditProblemModal';
 
 export const ProblemDetailView: React.FC = () => {
   const { 
@@ -28,10 +30,14 @@ export const ProblemDetailView: React.FC = () => {
     problems, 
     setCurrentView, 
     currentUser, 
+    currentRole,
+    updateProblem,
     addSubmission, 
     theme,
     showToast 
   } = useApp();
+
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const problem = problems.find(p => p.id === selectedProblemId) || problems[0];
 
@@ -194,6 +200,16 @@ export const ProblemDetailView: React.FC = () => {
           <h2 className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200 truncate max-w-[200px] sm:max-w-md">
             {problem.id}: {problem.titleKhmer}
           </h2>
+          {(currentRole === 'admin' || currentRole === 'teacher') && (
+            <button
+              onClick={() => setIsEditModalOpen(true)}
+              className="px-2.5 py-1 rounded-lg bg-indigo-50 dark:bg-indigo-950/70 hover:bg-indigo-100 dark:hover:bg-indigo-900 text-indigo-600 dark:text-indigo-400 text-xs font-bold flex items-center gap-1 transition shadow-2xs shrink-0"
+              title="កែប្រែលំហាត់នេះ (Edit Problem)"
+            >
+              <Edit3 className="h-3.5 w-3.5" />
+              <span>កែប្រែលំហាត់</span>
+            </button>
+          )}
         </div>
 
         {/* Language switch & Run/Submit controls */}
@@ -560,6 +576,17 @@ export const ProblemDetailView: React.FC = () => {
         </div>
 
       </div>
+
+      {/* Edit Problem Modal */}
+      <EditProblemModal
+        isOpen={isEditModalOpen}
+        problem={problem}
+        onClose={() => setIsEditModalOpen(false)}
+        onSave={(updated) => {
+          updateProblem(updated);
+          showToast('បានកែប្រែលំហាត់ដោយជោគជ័យ!', 'success');
+        }}
+      />
 
     </div>
   );
