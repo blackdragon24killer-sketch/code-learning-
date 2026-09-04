@@ -1,0 +1,6 @@
+{
+  "name": "Khmer Code Test",
+  "description": "វេទិកាប្រឡង និងហាត់រៀនសរសេរកូដ Python & C++ សម្រាប់សិស្ស-និស្សិតកម្ពុជា",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
