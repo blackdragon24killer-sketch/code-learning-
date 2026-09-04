@@ -29,6 +29,45 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Ensure entry point and configuration exist
+        run: |
+          if [ ! -f src/main.tsx ]; then
+            echo "Creating missing src/main.tsx..."
+            cat << 'EOF' > src/main.tsx
+          import {StrictMode} from 'react';
+          import {createRoot} from 'react-dom/client';
+          import App from './App.tsx';
+          import './index.css';
+
+          createRoot(document.getElementById('root')!).render(
+            <StrictMode>
+              <App />
+            </StrictMode>,
+          );
+          EOF
+          fi
+          if [ ! -f vite.config.ts ]; then
+            echo "Creating missing vite.config.ts..."
+            cat << 'EOF' > vite.config.ts
+          import tailwindcss from '@tailwindcss/vite';
+          import react from '@vitejs/plugin-react';
+          import path from 'path';
+          import {defineConfig} from 'vite';
+
+          export default defineConfig(() => {
+            return {
+              base: './',
+              plugins: [react(), tailwindcss()],
+              resolve: {
+                alias: {
+                  '@': path.resolve(__dirname, '.'),
+                },
+              },
+            };
+          });
+          EOF
+          fi
+
       - name: Build project
         run: npm run build
 
