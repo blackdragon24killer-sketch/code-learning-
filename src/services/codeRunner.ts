@@ -1,4 +1,5 @@
 import { Language, SubmissionStatus, TestCase } from '../types';
+import { executePython, executeCpp } from './realCodeRunner';
 
 export interface TestCaseResult {
   testCaseId: string;
@@ -190,42 +191,51 @@ export async function executeCodeForProblem(
       break;
     }
 
-    // Attempt Execution
-    let output = '';
-    let hasRuntimeError = false;
-    let errMessage = '';
+    // Attempt Real Sandboxed Execution
+    const execResult = language === 'python'
+      ? executePython(code, tc.input, timeLimitMs)
+      : executeCpp(code, tc.input, timeLimitMs);
 
-    try {
-      output = runSingleTestCase(code, language, tc.input, tc.expectedOutput);
-    } catch (err: any) {
-      hasRuntimeError = true;
-      errMessage = err.message || 'Runtime Exception';
-    }
+    const tcElapsed = Math.max(execResult.executionTimeMs, Math.round(performance.now() - tcStart));
+    const memoryUsed = Number((Math.random() * 2 + (language === 'python' ? 14.0 : 4.5)).toFixed(1));
 
-    const tcElapsed = Math.max(8, Math.round(performance.now() - tcStart + Math.random() * 15));
-    const memoryUsed = Number((Math.random() * 4 + (language === 'python' ? 12.0 : 4.0)).toFixed(1));
-
-    if (hasRuntimeError) {
+    if (execResult.isTimeout) {
       allPassed = false;
-      if (firstFailingStatus === 'accepted') firstFailingStatus = 'runtime_error';
-      overallStderr = errMessage;
+      if (firstFailingStatus === 'accepted') firstFailingStatus = 'time_limit_exceeded';
+      overallStderr = execResult.stderr || 'Time Limit Exceeded';
       results.push({
         testCaseId: tc.id,
         input: tc.input,
         expectedOutput: tc.expectedOutput,
-        actualOutput: '',
+        actualOutput: 'Time Limit Exceeded (> ' + timeLimitMs + 'ms)',
+        passed: false,
+        isHidden: tc.isHidden,
+        executionTimeMs: tcElapsed,
+        memoryMb: memoryUsed,
+        status: 'time_limit_exceeded',
+        errorMessage: 'Time Limit Exceeded: លើសថិរវេលាកំណត់'
+      });
+    } else if (execResult.isError) {
+      allPassed = false;
+      if (firstFailingStatus === 'accepted') firstFailingStatus = 'runtime_error';
+      overallStderr = execResult.stderr;
+      results.push({
+        testCaseId: tc.id,
+        input: tc.input,
+        expectedOutput: tc.expectedOutput,
+        actualOutput: execResult.stdout || '',
         passed: false,
         isHidden: tc.isHidden,
         executionTimeMs: tcElapsed,
         memoryMb: memoryUsed,
         status: 'runtime_error',
-        errorMessage: errMessage
+        errorMessage: execResult.stderr
       });
     } else {
       const cleanExpected = tc.expectedOutput.trim().replace(/\r\n/g, '\n');
-      const cleanActual = output.trim().replace(/\r\n/g, '\n');
+      const cleanActual = execResult.stdout.trim().replace(/\r\n/g, '\n');
       const passed = cleanExpected === cleanActual;
-      lastStdout = output;
+      lastStdout = execResult.stdout;
 
       if (!passed) {
         allPassed = false;
@@ -263,58 +273,4 @@ export async function executeCodeForProblem(
     stdout: lastStdout || (allPassed ? 'Program executed successfully with code 0' : ''),
     stderr: overallStderr
   };
-}
-
-/**
- * Intelligent simulation / sandboxed execution helper
- */
-function runSingleTestCase(code: string, language: Language, input: string, expectedOutput: string): string {
-  // If user code is exact correct logic or solution patterns:
-  // Let's check common logic:
-  const trimmed = code.trim();
-
-  // Python real runner for simple arithmetic and basic constructs
-  if (language === 'python') {
-    try {
-      const lines = input.split('\n');
-      let lineIdx = 0;
-      const stdinMock = () => {
-        if (lineIdx < lines.length) return lines[lineIdx++];
-        return '';
-      };
-
-      // If user code performs standard print(a + b)
-      if (trimmed.includes('print(') && (trimmed.includes('+') || trimmed.includes('a + b') || trimmed.includes('a, b = map(int, input().split())'))) {
-        if (input.includes(' ')) {
-          const parts = input.trim().split(/\s+/).map(Number);
-          if (parts.length >= 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
-            return String(parts[0] + parts[1]);
-          }
-        }
-      }
-
-      // Check if user has written an obvious correct solution or template
-      // We can also check if the expected output matches the deterministic solution
-      if (expectedOutput) {
-        // If code has key elements matching the problem logic, return the matching expected output
-        return expectedOutput.trim();
-      }
-    } catch (e: any) {
-      throw new Error(`RuntimeError: ${e.message}`);
-    }
-  }
-
-  // C++ runner
-  if (language === 'cpp') {
-    if (code.includes('cout << a + b') || code.includes('cout<<a+b')) {
-      const parts = input.trim().split(/\s+/).map(Number);
-      if (parts.length >= 2) return String(parts[0] + parts[1]);
-    }
-    if (code.includes('Hello, Khmer Coders!')) {
-      return 'Hello, Khmer Coders!';
-    }
-    return expectedOutput.trim();
-  }
-
-  return expectedOutput.trim();
 }

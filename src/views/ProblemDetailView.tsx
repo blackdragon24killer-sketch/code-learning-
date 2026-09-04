@@ -3,6 +3,7 @@ import { useApp } from '../context/AppContext';
 import { Language, Submission } from '../types';
 import { CodeEditor } from '../components/CodeEditor';
 import { executeCodeForProblem, RunResult, STATUS_LABELS } from '../services/codeRunner';
+import { executePython, executeCpp } from '../services/realCodeRunner';
 import confetti from 'canvas-confetti';
 import { 
   Play, 
@@ -63,6 +64,33 @@ export const ProblemDetailView: React.FC = () => {
   const [selectedTestCaseIdx, setSelectedTestCaseIdx] = useState(0);
   const [customInput, setCustomInput] = useState('');
   const [customOutput, setCustomOutput] = useState('');
+  const [isCustomRunning, setIsCustomRunning] = useState(false);
+
+  // RUN CUSTOM INPUT
+  const handleRunCustomInput = () => {
+    setIsCustomRunning(true);
+    try {
+      const exec = activeLanguage === 'python'
+        ? executePython(code, customInput, problem.timeLimitMs)
+        : executeCpp(code, customInput, problem.timeLimitMs);
+
+      if (exec.isTimeout) {
+        setCustomOutput('Time Limit Exceeded (> ' + problem.timeLimitMs + 'ms)');
+        showToast('លើសពេលវេលាកំណត់ (Time Limit Exceeded)', 'error');
+      } else if (exec.isError) {
+        setCustomOutput(exec.stderr || 'Runtime Error');
+        showToast('កំហុសពេលដំណើរការកូដ', 'error');
+      } else {
+        setCustomOutput(exec.stdout || '(គ្មាន Output / Empty Output)');
+        showToast('ដំណើរការបានជោគជ័យ!', 'success');
+      }
+    } catch (e: any) {
+      setCustomOutput(e.message || String(e));
+      showToast('កំហុស', 'error');
+    } finally {
+      setIsCustomRunning(false);
+    }
+  };
 
   // RUN CODE (Only public test cases or first 2)
   const handleRunCode = async () => {
@@ -497,23 +525,32 @@ export const ProblemDetailView: React.FC = () => {
               {activeResultTab === 'custom' && (
                 <div className="space-y-3 font-sans">
                   <div>
-                    <label className="text-xs text-slate-400 block mb-1">បញ្ចូល Custom Input៖</label>
+                    <label className="text-xs text-slate-400 block mb-1">បញ្ចូល Custom Input (Stdin)៖</label>
                     <textarea
                       value={customInput}
                       onChange={(e) => setCustomInput(e.target.value)}
                       rows={3}
                       placeholder="ឧ. 10 20"
-                      className="w-full p-2 rounded-lg bg-slate-900 border border-slate-800 text-xs text-slate-200 font-mono"
+                      className="w-full p-2.5 rounded-lg bg-slate-900 border border-slate-800 text-xs text-slate-200 font-mono focus:outline-none focus:border-indigo-500"
                     />
                   </div>
                   <button
-                    onClick={() => {
-                      showToast('ដំណើរការជាមួយ Custom Input...', 'info');
-                    }}
-                    className="px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-xs font-bold"
+                    onClick={handleRunCustomInput}
+                    disabled={isCustomRunning}
+                    className="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-xs font-bold transition flex items-center gap-2"
                   >
-                    តេស្តជាមួយ Input នេះ
+                    <Play className="h-3.5 w-3.5 fill-current" />
+                    {isCustomRunning ? 'កំពុងដំណើរការ...' : 'តេស្តជាមួយ Input នេះ'}
                   </button>
+
+                  {customOutput && (
+                    <div className="pt-2">
+                      <span className="text-[11px] text-slate-400 uppercase block mb-1 font-mono">Your Program Output:</span>
+                      <pre className="p-3 rounded-lg bg-slate-950 border border-slate-800 text-emerald-400 text-xs font-mono whitespace-pre-wrap">
+                        {customOutput}
+                      </pre>
+                    </div>
+                  )}
                 </div>
               )}
 
