@@ -274,3 +274,65 @@ export async function executeCodeForProblem(
     stderr: overallStderr
   };
 }
+
+export interface PlaygroundRunResult {
+  stdout: string;
+  stderr?: string;
+  isError: boolean;
+  isTimeout: boolean;
+  executionTimeMs: number;
+  memoryMb: number;
+  exitCode: number;
+  timestamp: string;
+}
+
+/**
+ * Execute custom scratchpad / playground code with user-supplied stdin
+ */
+export async function executePlaygroundCode(
+  code: string,
+  language: Language,
+  customInput: string = '',
+  timeLimitMs: number = 2000
+): Promise<PlaygroundRunResult> {
+  const startTime = performance.now();
+
+  // 1. Syntax check
+  const syntaxErr = checkSyntax(code, language);
+  if (syntaxErr) {
+    const elapsed = Math.max(10, Math.round(performance.now() - startTime));
+    return {
+      stdout: '',
+      stderr: syntaxErr,
+      isError: true,
+      isTimeout: false,
+      executionTimeMs: elapsed,
+      memoryMb: 6.8,
+      exitCode: 1,
+      timestamp: new Date().toLocaleTimeString()
+    };
+  }
+
+  // Artificial short delay for realistic sandbox feeling
+  await new Promise(r => setTimeout(r, 120 + Math.random() * 80));
+
+  const runStart = performance.now();
+  const res = language === 'python'
+    ? executePython(code, customInput, timeLimitMs)
+    : executeCpp(code, customInput, timeLimitMs);
+
+  const elapsed = Math.max(res.executionTimeMs, Math.round(performance.now() - runStart));
+  const memoryUsed = Number((Math.random() * 1.8 + (language === 'python' ? 12.4 : 4.2)).toFixed(1));
+
+  return {
+    stdout: res.stdout || '',
+    stderr: res.stderr || undefined,
+    isError: res.isError,
+    isTimeout: res.isTimeout,
+    executionTimeMs: elapsed,
+    memoryMb: memoryUsed,
+    exitCode: (res.isError || res.isTimeout) ? 1 : 0,
+    timestamp: new Date().toLocaleTimeString()
+  };
+}
+

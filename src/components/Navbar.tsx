@@ -17,7 +17,9 @@ import {
   GraduationCap, 
   UserCheck, 
   ChevronDown,
-  Sparkles
+  Sparkles,
+  Play,
+  Terminal
 } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
@@ -41,6 +43,7 @@ export const Navbar: React.FC = () => {
   const navItems = [
     { id: 'home', labelKhmer: 'ទំព័រដើម', icon: Sparkles },
     { id: 'problems', labelKhmer: 'ហាត់សរសេរកូដ', icon: Code2 },
+    { id: 'playground', labelKhmer: 'តេស្តកូដ', icon: Play, badge: 'Live' },
     { id: 'tests', labelKhmer: 'ប្រឡងសរសេរកូដ', icon: BookOpen },
     { id: 'competitions', labelKhmer: 'ការប្រកួត', icon: Trophy },
     { id: 'leaderboard', labelKhmer: 'តារាងចំណាត់ថ្នាក់', icon: Award },
@@ -99,7 +102,7 @@ export const Navbar: React.FC = () => {
         </div>
 
         {/* Desktop Navigation Links */}
-        <nav className="hidden md:flex items-center gap-1">
+        <nav className="hidden md:flex items-center gap-0.5 lg:gap-1">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = currentView === item.id;
@@ -108,7 +111,7 @@ export const Navbar: React.FC = () => {
                 key={item.id}
                 id={`nav-link-${item.id}`}
                 onClick={() => setCurrentView(item.id as any)}
-                className={`px-3.5 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-1.5 ${
+                className={`px-2.5 lg:px-3 py-1.5 lg:py-2 rounded-lg text-xs lg:text-sm font-medium transition-all flex items-center gap-1.5 ${
                   isActive
                     ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400 font-semibold shadow-xs'
                     : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-900/60'
@@ -116,6 +119,11 @@ export const Navbar: React.FC = () => {
               >
                 <Icon className="h-4 w-4" />
                 <span>{item.labelKhmer}</span>
+                {item.badge && (
+                  <span className="hidden xl:inline text-[9px] uppercase font-bold tracking-wider px-1 py-0.2 rounded bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400">
+                    {item.badge}
+                  </span>
+                )}
               </button>
             );
           })}
@@ -290,14 +298,21 @@ export const Navbar: React.FC = () => {
                   setCurrentView(item.id as any);
                   setMobileMenuOpen(false);
                 }}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium ${
+                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium ${
                   isActive
                     ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400 font-bold'
                     : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-900'
                 }`}
               >
-                <Icon className="h-5 w-5" />
-                <span>{item.labelKhmer}</span>
+                <div className="flex items-center gap-3">
+                  <Icon className="h-5 w-5" />
+                  <span>{item.labelKhmer}</span>
+                </div>
+                {item.badge && (
+                  <span className="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400">
+                    {item.badge}
+                  </span>
+                )}
               </button>
             );
           })}

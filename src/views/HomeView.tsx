@@ -69,10 +69,21 @@ export const HomeView: React.FC = () => {
               onClick={() => {
                 setCurrentView('tests');
               }}
-              className="px-6 py-3.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 hover:border-indigo-500 dark:hover:border-indigo-500 text-slate-800 dark:text-slate-200 font-semibold text-sm flex items-center gap-2 shadow-xs transition-all hover:scale-[1.02]"
+              className="px-5 py-3.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 hover:border-indigo-500 dark:hover:border-indigo-500 text-slate-800 dark:text-slate-200 font-semibold text-sm flex items-center gap-2 shadow-xs transition-all hover:scale-[1.02]"
             >
               <Clock className="h-4 w-4 text-indigo-500" />
-              <span>ចូលរួមការប្រឡងសរសេរកូដ</span>
+              <span>ចូលរួមការប្រឡង</span>
+            </button>
+
+            <button
+              id="hero-btn-playground"
+              onClick={() => {
+                setCurrentView('playground');
+              }}
+              className="px-5 py-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-800/80 hover:border-emerald-500 dark:hover:border-emerald-500 text-emerald-800 dark:text-emerald-300 font-semibold text-sm flex items-center gap-2 shadow-xs transition-all hover:scale-[1.02]"
+            >
+              <Terminal className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+              <span>តេស្តកូដផ្ទាល់ (Playground)</span>
             </button>
           </div>
 

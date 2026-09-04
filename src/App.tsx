@@ -4,6 +4,7 @@ import { Navbar } from './components/Navbar';
 import { HomeView } from './views/HomeView';
 import { ProblemsView } from './views/ProblemsView';
 import { ProblemDetailView } from './views/ProblemDetailView';
+import { PlaygroundView } from './views/PlaygroundView';
 import { TestsListView } from './views/TestsListView';
 import { TestTakingView } from './views/TestTakingView';
 import { CompetitionsView } from './views/CompetitionsView';
@@ -25,6 +26,7 @@ const MainContent: React.FC = () => {
       <main className="flex-1">
         {currentView === 'home' && <HomeView />}
         {currentView === 'problems' && <ProblemsView />}
+        {currentView === 'playground' && <PlaygroundView />}
         {currentView === 'problem_detail' && <ProblemDetailView />}
         {currentView === 'tests' && <TestsListView />}
         {currentView === 'test_taking' && <TestTakingView />}
@@ -49,6 +51,9 @@ const MainContent: React.FC = () => {
             <div className="flex items-center gap-4">
               <button onClick={() => setCurrentView('problems')} className="hover:text-indigo-600">
                 បញ្ជីលំហាត់
+              </button>
+              <button onClick={() => setCurrentView('playground')} className="hover:text-indigo-600 font-semibold text-indigo-600 dark:text-indigo-400">
+                តេស្តកូដ (Playground)
               </button>
               <button onClick={() => setCurrentView('tests')} className="hover:text-indigo-600">
                 ការប្រឡង

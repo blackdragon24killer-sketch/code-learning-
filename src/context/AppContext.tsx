@@ -6,6 +6,7 @@ import { initialUsers, initialTests, initialSubmissions, initialLeaderboard } fr
 export type ActiveView = 
   | 'home' 
   | 'problems' 
+  | 'playground'
   | 'problem_detail' 
   | 'tests' 
   | 'test_taking' 
