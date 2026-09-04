@@ -12,10 +12,62 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Kantumruy+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Siemreap&display=swap" rel="stylesheet">
+    <!-- GitHub Pages Single Page App (SPA) redirect restoration -->
+    <script type="text/javascript">
+      (function(l) {
+        if (l.search[1] === '/' ) {
+          var decoded = l.search.slice(1).split('&').map(function(s) { 
+            return s.replace(/~and~/g, '&')
+          }).join('?');
+          window.history.replaceState(null, null,
+              l.pathname.slice(0, -1) + decoded + l.hash
+          );
+        }
+      }(window.location))
+    </script>
   </head>
   <body class="bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 font-sans antialiased transition-colors duration-200 selection:bg-indigo-500 selection:text-white">
     <div id="root"></div>
-    <script type="module" src="./src/main.tsx"></script>
+    <script type="module" src="/src/main.tsx"></script>
+
+    <!-- Fallback if served unbuilt directly from repository root on GitHub Pages -->
+    <script>
+      setTimeout(function() {
+        var root = document.getElementById('root');
+        if (root && root.children.length === 0 && window.location.hostname.includes('github.io')) {
+          root.innerHTML = `
+            <div style="font-family: system-ui, -apple-system, sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 24px; background: #0f172a; color: #f8fafc;">
+              <div style="max-width: 620px; background: #1e293b; border: 1px solid #334155; border-radius: 16px; padding: 32px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5);">
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
+                  <div style="width: 44px; height: 44px; border-radius: 12px; background: #6366f1; display: flex; align-items: center; justify-content: center; font-size: 22px;">⚙️</div>
+                  <div>
+                    <h2 style="margin: 0; font-size: 18px; font-weight: 700; color: #ffffff;">Khmer Code Test - ការរៀបចំ GitHub Pages</h2>
+                    <p style="margin: 4px 0 0; font-size: 13px; color: #94a3b8;">GitHub Pages Deployment Setup</p>
+                  </div>
+                </div>
+                <p style="font-size: 14px; line-height: 1.6; color: #cbd5e1; margin-bottom: 16px;">
+                  ទំព័រនេះកំពុងដំណើរការលើ GitHub Pages ដោយផ្ទាល់ពី source code (មិនទាន់ Build)។ ដើម្បីឱ្យវេទិកាបង្ហាញផ្ទាំងកម្មវិធីពេញលេញ សូមកំណត់៖
+                </p>
+                <div style="background: #0f172a; border: 1px solid #334155; border-radius: 12px; padding: 16px; margin-bottom: 20px; font-size: 13px; line-height: 1.7; color: #e2e8f0;">
+                  <strong>ជំហានងាយៗ ២ ជំហាន (2 Simple Steps):</strong><br>
+                  1. ចូលទៅកាន់ GitHub Repository &gt; ចុចលើ <strong>Settings</strong> &gt; ជ្រើសរើស <strong>Pages</strong><br>
+                  2. ត្រង់ចំណុច <strong>Build and deployment &rarr; Source</strong> សូមជ្រើសរើស <strong>GitHub Actions</strong> (ជំនួសឱ្យ Deploy from a branch)<br>
+                  3. រួចរាល់! GitHub Actions នឹង Build និង Deploy ដោយស្វ័យប្រវត្តិក្នុងរយៈពេល ~1 នាទី។
+                </div>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                  <button onclick="window.location.reload()" style="background: #6366f1; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer;">
+                    🔄 ផ្ទុកទំព័រឡើងវិញ (Reload)
+                  </button>
+                  <a href="https://github.com/blackdragon24killer-sketch/code-learning-/actions" target="_blank" style="background: #334155; color: white; text-decoration: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; font-size: 13px; display: inline-flex; align-items: center;">
+                    មើល GitHub Actions &rarr;
+                  </a>
+                </div>
+              </div>
+            </div>
+          `;
+        }
+      }, 2500);
+    </script>
   </body>
 </html>
 
